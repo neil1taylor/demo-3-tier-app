@@ -36,7 +36,14 @@ install_tomcat() {
     # Download Tomcat if not already present
     if [ ! -f "apache-tomcat-${TOMCAT_VERSION}.tar.gz" ]; then
         echo "[DEPLOY] Downloading Tomcat..."
-        sudo wget -q "https://archive.apache.org/dist/tomcat/tomcat-9/v${TOMCAT_VERSION}/bin/apache-tomcat-${TOMCAT_VERSION}.tar.gz"
+        if command -v wget >/dev/null 2>&1; then
+            sudo wget -q "https://archive.apache.org/dist/tomcat/tomcat-9/v${TOMCAT_VERSION}/bin/apache-tomcat-${TOMCAT_VERSION}.tar.gz"
+        elif command -v curl >/dev/null 2>&1; then
+            sudo curl -s -L -O "https://archive.apache.org/dist/tomcat/tomcat-9/v${TOMCAT_VERSION}/bin/apache-tomcat-${TOMCAT_VERSION}.tar.gz"
+        else
+            echo "[ERROR] Neither wget nor curl found. Please install one of them."
+            exit 1
+        fi
     fi
     
     # Extract Tomcat
