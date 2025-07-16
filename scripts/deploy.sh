@@ -32,7 +32,7 @@
     fi
     
     # Create systemd service with Java 17 optimizations
-    sudo tee /etc/systemd/system/tomcat.service > /dev/null << EOF
+    sudo tee /etc/systemd/system/tomcat.service > /dev/null << 'EOF'
     [Unit]
     Description=Apache Tomcat Web Application Container
     After=network.target
