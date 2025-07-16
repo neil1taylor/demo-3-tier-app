@@ -1,10 +1,10 @@
 #!/bin/bash
     set -e
     
-    echo "[BUILD] Starting build process..."
+    echo "[BUILD] Starting build process with Java 17..."
     
-    # Set JAVA_HOME for Java 11 (compatible with Maven)
-    export JAVA_HOME="/usr/lib/jvm/java-11-openjdk"
+    # Set JAVA_HOME for Java 17
+    export JAVA_HOME="/usr/lib/jvm/java-17-openjdk"
     export PATH="$JAVA_HOME/bin:$PATH"
     
     echo "[BUILD] Java version: $(java -version 2>&1 | head -1)"
@@ -17,21 +17,22 @@
         rm -rf target/
     fi
     
-    # Set Maven options for Java 11
+    # Set Maven options for Java 17 (no MaxPermSize, use MetaspaceSize)
     export MAVEN_OPTS="-Xmx1024m -XX:MetaspaceSize=256m"
     
-    # Build application
+    # Build application with Java 17 settings
     echo "[BUILD] Building application..."
     mvn clean package \
         -DskipTests=false \
-        -Dmaven.compiler.source=11 \
-        -Dmaven.compiler.target=11 \
+        -Dmaven.compiler.source=17 \
+        -Dmaven.compiler.target=17 \
         -Dproject.build.sourceEncoding=UTF-8 \
+        -Dmaven.compiler.release=17 \
         --batch-mode \
         --errors
     
     # Verify build
-    if [ -f target/*.war ]; then
+    if ls target/*.war 1> /dev/null 2>&1; then
         echo "[BUILD] ✅ Build successful!"
         ls -la target/*.war
     else
