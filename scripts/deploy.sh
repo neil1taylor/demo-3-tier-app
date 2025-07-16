@@ -1,15 +1,15 @@
 #!/bin/bash
     set -e
     
-    echo "[DEPLOY] Starting deployment process..."
+    echo "[DEPLOY] Starting deployment process with Java 17..."
     
     # Configuration
     TOMCAT_VERSION="9.0.87"
     TOMCAT_DIR="/opt/apache-tomcat-${TOMCAT_VERSION}"
     TOMCAT_USER="rhel"
     
-    # Set JAVA_HOME
-    export JAVA_HOME="/usr/lib/jvm/java-11-openjdk"
+    # Set JAVA_HOME for Java 17
+    export JAVA_HOME="/usr/lib/jvm/java-17-openjdk"
     echo "[DEPLOY] Using JAVA_HOME: $JAVA_HOME"
     
     # Install Tomcat if not present
@@ -31,7 +31,7 @@
         echo "[DEPLOY] Tomcat installed at: $TOMCAT_DIR"
     fi
     
-    # Create systemd service
+    # Create systemd service with Java 17 optimizations
     sudo tee /etc/systemd/system/tomcat.service > /dev/null << EOF
     [Unit]
     Description=Apache Tomcat Web Application Container
@@ -45,7 +45,7 @@
     Environment="CATALINA_PID=${TOMCAT_DIR}/temp/tomcat.pid"
     Environment="CATALINA_HOME=${TOMCAT_DIR}"
     Environment="CATALINA_BASE=${TOMCAT_DIR}"
-    Environment="CATALINA_OPTS=-Xms512M -Xmx1024M -server"
+    Environment="CATALINA_OPTS=-Xms512M -Xmx1024M -server -XX:+UseG1GC -XX:+UseStringDeduplication"
     ExecStart=${TOMCAT_DIR}/bin/startup.sh
     ExecStop=${TOMCAT_DIR}/bin/shutdown.sh
     RestartSec=10
@@ -55,7 +55,7 @@
     WantedBy=multi-user.target
     EOF
     
-    # Configure firewall (handle missing firewalld gracefully)
+    # Configure firewall
     echo "[DEPLOY] Configuring firewall..."
     if systemctl list-unit-files | grep -q firewalld.service; then
         sudo systemctl enable firewalld
@@ -64,11 +64,8 @@
         sudo firewall-cmd --reload
         echo "[DEPLOY] Firewall configured with firewalld"
     else
-        echo "[DEPLOY] Firewalld not available, configuring iptables..."
-        # Basic iptables rule to allow port 8080
+        echo "[DEPLOY] Firewalld not available, using iptables..."
         sudo iptables -I INPUT -p tcp --dport 8080 -j ACCEPT
-        # Save iptables rules (method varies by distribution)
-        sudo service iptables save 2>/dev/null || true
         echo "[DEPLOY] Firewall configured with iptables"
     fi
     
@@ -113,6 +110,7 @@
     sleep 10
     if curl -f -s "http://localhost:8080/$APP_NAME" > /dev/null; then
         echo "[DEPLOY] ✅ Application is responding!"
+        echo "[DEPLOY] 🌐 Access URL: http://localhost:8080/$APP_NAME"
     else
         echo "[DEPLOY] ⚠️ Application deployed but not responding yet"
     fi
