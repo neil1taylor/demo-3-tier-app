@@ -71,7 +71,7 @@ three-tier-java-app/
 This application is designed to be deployed on:
 - IBM Cloud Red Hat OpenShift Kubernetes Service (ROKS)
 - OpenShift Virtualization (OCP-V)
-- RHEL 9 Virtual Machines
+- CentOS Stream 9 Virtual Machines
 - OpenShift Data Foundation (ODF) storage
 
 ## Environment Variables
