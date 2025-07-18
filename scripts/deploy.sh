@@ -35,18 +35,9 @@ install_tomcat() {
     
     cd /opt
     
-    # Download Tomcat if not already present
-    if [ ! -f "apache-tomcat-${TOMCAT_VERSION}.tar.gz" ]; then
-        echo "[DEPLOY] Downloading Tomcat..."
-        if command_exists wget; then
-            sudo wget -q "https://archive.apache.org/dist/tomcat/tomcat-9/v${TOMCAT_VERSION}/bin/apache-tomcat-${TOMCAT_VERSION}.tar.gz"
-        elif command_exists curl; then
-            sudo curl -s -L -O "https://archive.apache.org/dist/tomcat/tomcat-9/v${TOMCAT_VERSION}/bin/apache-tomcat-${TOMCAT_VERSION}.tar.gz"
-        else
-            echo "[ERROR] Neither wget nor curl found. Please install one of them."
-            exit 1
-        fi
-    fi
+    # Download Tomcat
+    echo "[DEPLOY] Downloading Tomcat..."
+    sudo wget -q "https://archive.apache.org/dist/tomcat/tomcat-9/v${TOMCAT_VERSION}/bin/apache-tomcat-${TOMCAT_VERSION}.tar.gz"
     
     # Extract Tomcat
     echo "[DEPLOY] Extracting Tomcat..."
@@ -64,10 +55,7 @@ install_tomcat() {
 # Function to create systemd service (FIXED - proper here-document handling)
 create_tomcat_service() {
     echo "[DEPLOY] Creating Tomcat systemd service..."
-    
-    # Use a temporary file to avoid here-document issues
     local service_file="/tmp/tomcat.service.$$"
-    
     cat > "${service_file}" << 'EOF'
 [Unit]
 Description=Apache Tomcat Web Application Container
