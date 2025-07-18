@@ -12,6 +12,8 @@ TOMCAT_VERSION="9.0.87"
 TOMCAT_DIR="/opt/apache-tomcat-${TOMCAT_VERSION}"
 TOMCAT_USER="rhel"
 TOMCAT_GROUP="rhel"
+WAR_FILE="/tmp/three-tier-java-app/target"
+APP_NAME="app"
 
 # Detect Java home automatically
 if [ -n "$JAVA_HOME" ]; then
@@ -143,30 +145,17 @@ fi
 # Configure firewall
 configure_firewall
 
-# Check for WAR file
-echo "[DEPLOY] Looking for WAR file..."
-WAR_FILE=""
-
-# Look for WAR files in target directory
-if [ -d "target" ]; then
-    WAR_FILE=$(find target -name "*.war" -type f | head -1)
-fi
-
-# If no WAR file found in target, look in current directory
-if [ -z "$WAR_FILE" ]; then
-    WAR_FILE=$(find . -maxdepth 1 -name "*.war" -type f | head -1)
-fi
-
-if [ -z "$WAR_FILE" ]; then
-    echo "[ERROR] No WAR file found. Please build the application first using: ./scripts/build.sh"
-    exit 1
-fi
-
-echo "[DEPLOY] Found WAR file: $WAR_FILE"
-
 # Stop Tomcat if running
 echo "[DEPLOY] Stopping Tomcat if running..."
 sudo systemctl stop tomcat 2>/dev/null || true
+
+# Check for WAR file
+if [ ! -f "$WAR_FILE" ]; then
+    echo "[DEPLOY] $WAR_FILE file exists."
+else
+    echo "[DEPLOY] $WAR_FILE file does not exist."
+    exit 1
+fi
 
 # Deploy new WAR file
 echo "[DEPLOY] Deploying WAR file..."
