@@ -10,13 +10,6 @@
     echo "[BUILD] Java version: $(java -version 2>&1 | head -1)"
     echo "[BUILD] JAVA_HOME: $JAVA_HOME"
     
-    # Clean previous builds
-    echo "[BUILD] Cleaning previous builds..."
-    if [ -d "target" ]; then
-        chmod -R u+w target/ 2>/dev/null || true
-        rm -rf target/
-    fi
-    
     # Set Maven options for Java 17 (no MaxPermSize, use MetaspaceSize)
     export MAVEN_OPTS="-Xmx1024m -XX:MetaspaceSize=256m"
     
@@ -32,6 +25,7 @@
         --errors
     
     # Verify build
+    # war file should be in /tmp/three-tier-java-app/target and named app.war
     if ls target/*.war 1> /dev/null 2>&1; then
         echo "[BUILD] ✅ Build successful!"
         ls -la target/*.war
