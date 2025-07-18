@@ -27,50 +27,6 @@ else
     exit 1
 fi
 
-# Function to check if command exists
-command_exists() {
-    command -v "$1" >/dev/null 2>&1
-}
-
-# Function to install dependencies
-install_dependencies() {
-    echo "[DEPLOY] Checking dependencies..."
-    
-    local missing_deps=()
-    
-    if ! command_exists wget && ! command_exists curl; then
-        missing_deps+=("wget")
-    fi
-    
-    if ! command_exists tar; then
-        missing_deps+=("tar")
-    fi
-    
-    if ! command_exists gzip; then
-        missing_deps+=("gzip")
-    fi
-    
-    if [ ${#missing_deps[@]} -gt 0 ]; then
-        echo "[DEPLOY] Installing missing dependencies: ${missing_deps[*]}"
-        
-        # Detect package manager and install
-        if command_exists dnf; then
-            sudo dnf install -y "${missing_deps[@]}"
-        elif command_exists yum; then
-            sudo yum install -y "${missing_deps[@]}"
-        elif command_exists apt-get; then
-            sudo apt-get update
-            sudo apt-get install -y wget tar gzip
-        else
-            echo "[ERROR] Cannot detect package manager. Please install manually:"
-            echo "        ${missing_deps[*]}"
-            exit 1
-        fi
-    else
-        echo "[DEPLOY] All dependencies are available."
-    fi
-}
-
 # Function to install Tomcat
 install_tomcat() {
     echo "[DEPLOY] Installing Apache Tomcat ${TOMCAT_VERSION}..."
@@ -170,9 +126,6 @@ configure_firewall() {
 
 # Main deployment logic starts here
 
-# Install dependencies if needed
-install_dependencies
-
 # Check if Tomcat is already installed
 if [ ! -d "${TOMCAT_DIR}" ]; then
     install_tomcat
@@ -205,8 +158,7 @@ if [ -z "$WAR_FILE" ]; then
 fi
 
 if [ -z "$WAR_FILE" ]; then
-    echo "[ERROR] No WAR file found. Please build the application first using:"
-    echo "        ./scripts/build.sh"
+    echo "[ERROR] No WAR file found. Please build the application first using: ./scripts/build.sh"
     exit 1
 fi
 
@@ -215,12 +167,6 @@ echo "[DEPLOY] Found WAR file: $WAR_FILE"
 # Stop Tomcat if running
 echo "[DEPLOY] Stopping Tomcat if running..."
 sudo systemctl stop tomcat 2>/dev/null || true
-
-# Remove old deployment
-APP_NAME=$(basename "$WAR_FILE" .war)
-echo "[DEPLOY] Removing old deployment: $APP_NAME"
-sudo rm -rf "${TOMCAT_DIR}/webapps/${APP_NAME}"
-sudo rm -f "${TOMCAT_DIR}/webapps/${APP_NAME}.war"
 
 # Deploy new WAR file
 echo "[DEPLOY] Deploying WAR file..."
