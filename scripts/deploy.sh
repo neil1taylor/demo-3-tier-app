@@ -5,7 +5,6 @@
 
 set -e  # Exit on any error
 
-echo "=== Deploying application ==="
 echo "[DEPLOY] Starting deployment process..."
 
 # Set Java environment (CentOS Stream 9 specific path)
