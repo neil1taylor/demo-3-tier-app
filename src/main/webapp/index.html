@@ -332,7 +332,7 @@
         }
         
         function checkHealth() {
-            fetch('/app/health')
+            fetch('/health')
                 .then(response => response.json())
                 .then(data => {
                     const statusDiv = document.getElementById('health-status');
@@ -376,7 +376,7 @@
             const usersDiv = document.getElementById('users');
             usersDiv.innerHTML = '<div class="loading"></div> Loading users...';
             
-            fetch('/app/api/users/')
+            fetch('/api/users/')
                 .then(response => response.json())
                 .then(users => {
                     // Update user count stat
@@ -436,7 +436,7 @@
             formData.append('name', name);
             formData.append('email', email);
             
-            fetch('/app/api/users/', {
+            fetch('/api/users/', {
                 method: 'POST',
                 body: formData
             })

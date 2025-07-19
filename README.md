@@ -40,9 +40,9 @@ three-tier-java-app/
 
 ## API Endpoints
 
-- `GET /app/api/users/` - List all users
-- `POST /app/api/users/` - Create new user
-- `GET /app/health` - Health check with database connectivity
+- `GET /api/users/` - List all users
+- `POST /api/users/` - Create new user
+- `GET /health` - Health check with database connectivity
 
 ## Local Development
 
@@ -62,9 +62,9 @@ three-tier-java-app/
 ```
 
 ### Access Application
-- Main App: http://localhost:8080/app/
-- Health Check: http://localhost:8080/app/health
-- API: http://localhost:8080/app/api/users/
+- Main App: http://localhost:8080/
+- Health Check: http://localhost:8080/health
+- API: http://localhost:8080/api/users/
 
 ## Deployment
 
