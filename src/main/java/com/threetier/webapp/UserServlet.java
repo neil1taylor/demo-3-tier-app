@@ -75,18 +75,25 @@ public class UserServlet extends HttpServlet {
      * POST /api/users/ - Create new user
      */
     @Override
-    protected void doPost(HttpServletRequest request, HttpServletResponse response) 
+    protected void doPost(HttpServletRequest request, HttpServletResponse response)
             throws ServletException, IOException {
         
         LOGGER.info("POST request received for user creation");
+        LOGGER.info("Content Type: " + request.getContentType());
         setJsonResponse(response);
         
         String name = request.getParameter("name");
         String email = request.getParameter("email");
         
+        LOGGER.info("Received parameters - name: '" + name + "', email: '" + email + "'");
+        LOGGER.info("name is null: " + (name == null) + ", email is null: " + (email == null));
+        if (name != null) LOGGER.info("name is empty: " + name.trim().isEmpty());
+        if (email != null) LOGGER.info("email is empty: " + email.trim().isEmpty());
+        
         // Validate input
         if (name == null || email == null || name.trim().isEmpty() || email.trim().isEmpty()) {
-            sendErrorResponse(response, HttpServletResponse.SC_BAD_REQUEST, 
+            LOGGER.warning("Validation failed: Name and email are required");
+            sendErrorResponse(response, HttpServletResponse.SC_BAD_REQUEST,
                             "Name and email are required");
             return;
         }
