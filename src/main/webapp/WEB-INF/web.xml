@@ -29,6 +29,10 @@
         <servlet-name>HealthServlet</servlet-name>
         <url-pattern>/health</url-pattern>
     </servlet-mapping>
+    <servlet-mapping>
+        <servlet-name>HealthServlet</servlet-name>
+        <url-pattern>/api/system-health</url-pattern>
+    </servlet-mapping>
     
     <!-- Default servlet for static content -->
     <servlet-mapping>
