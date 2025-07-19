@@ -98,6 +98,7 @@ public class DatabaseConnection {
      * @return connection info string
      */
     public static String getConnectionInfo() {
-        return String.format("%s@%s:%s/%s", DB_USER, DB_HOST, DB_PORT, DB_NAME);
+        return String.format("host=%s port=%s dbname=%s user=%s",
+                         DB_HOST, DB_PORT, DB_NAME, DB_USER);
     }
 }
