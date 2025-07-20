@@ -7,6 +7,7 @@ import javax.servlet.http.HttpServletResponse;
 import java.io.IOException;
 import java.sql.Connection;
 import java.sql.SQLException;
+import java.sql.Statement;
 import java.util.Date;
 import java.util.logging.Logger;
 import java.util.logging.Level;
@@ -37,16 +38,17 @@ public class HealthServlet extends HttpServlet {
         String dbStatus = "DOWN";
         String dbDetails = "Database connection failed";
         
-        try (Connection conn = DatabaseConnection.getConnection()) {
-            if (conn != null && !conn.isClosed()) {
-                // Test database with a simple query
-                conn.createStatement().executeQuery("SELECT 1").close();
-                dbHealthy = true;
-                dbStatus = "UP";
-                dbDetails = "Database connection successful";
-            }
+        try (Connection conn = DatabaseConnection.getConnection();
+             Statement stmt = conn.createStatement()) {
+            // Test actual table access instead of just connection
+            stmt.executeQuery("SELECT COUNT(*) FROM users");
+            dbHealthy = true;
+            dbStatus = "UP";
+            dbDetails = "Database connection and permissions verified";
         } catch (SQLException e) {
             LOGGER.log(Level.WARNING, "Database health check failed", e);
+            dbHealthy = false;
+            dbStatus = "DEGRADED";
             dbDetails = "Database error: " + e.getMessage();
         }
         

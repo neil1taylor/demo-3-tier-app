@@ -29,8 +29,15 @@ public class UserServlet extends HttpServlet {
                 .setPrettyPrinting()
                 .create();
         
-        // Initialize database
-        DatabaseConnection.initializeDatabase();
+        // Initialize database with improved error handling
+        boolean dbInitialized = DatabaseConnection.initializeDatabase();
+        
+        if (!dbInitialized) {
+            LOGGER.warning("Database initialization failed or had permission issues");
+            LOGGER.warning("UserServlet will continue but may have limited functionality");
+        } else {
+            LOGGER.info("Database initialized successfully");
+        }
         
         LOGGER.info("UserServlet initialized successfully");
     }
@@ -66,8 +73,23 @@ public class UserServlet extends HttpServlet {
             
         } catch (SQLException e) {
             LOGGER.log(Level.SEVERE, "Database error while retrieving users", e);
-            sendErrorResponse(response, HttpServletResponse.SC_INTERNAL_SERVER_ERROR, 
-                            "Database error: " + e.getMessage());
+            
+            // Provide more specific error messages for permission issues
+            if (e.getMessage().contains("permission") ||
+                e.getMessage().contains("privilege") ||
+                e.getSQLState().equals("42501")) {
+                sendErrorResponse(response, HttpServletResponse.SC_FORBIDDEN,
+                                "Database permission error: The application lacks required " +
+                                "permissions to access user data. Please contact the administrator.");
+            } else if (e.getMessage().contains("relation") &&
+                      e.getMessage().contains("does not exist")) {
+                sendErrorResponse(response, HttpServletResponse.SC_INTERNAL_SERVER_ERROR,
+                                "Database schema error: The users table does not exist. " +
+                                "The database may need to be initialized properly.");
+            } else {
+                sendErrorResponse(response, HttpServletResponse.SC_INTERNAL_SERVER_ERROR,
+                                "Database error: " + e.getMessage());
+            }
         }
     }
     
@@ -130,12 +152,23 @@ public class UserServlet extends HttpServlet {
         } catch (SQLException e) {
             LOGGER.log(Level.WARNING, "Database error while creating user", e);
             
-            // Handle unique constraint violation
+            // Handle different types of database errors with specific messages
             if (e.getMessage().contains("duplicate key") || e.getMessage().contains("unique")) {
-                sendErrorResponse(response, HttpServletResponse.SC_CONFLICT, 
+                sendErrorResponse(response, HttpServletResponse.SC_CONFLICT,
                                 "User with this email already exists");
+            } else if (e.getMessage().contains("permission") ||
+                      e.getMessage().contains("privilege") ||
+                      e.getSQLState().equals("42501")) {
+                sendErrorResponse(response, HttpServletResponse.SC_FORBIDDEN,
+                                "Database permission error: The application lacks required " +
+                                "permissions to create new users. Please contact the administrator.");
+            } else if (e.getMessage().contains("relation") &&
+                      e.getMessage().contains("does not exist")) {
+                sendErrorResponse(response, HttpServletResponse.SC_INTERNAL_SERVER_ERROR,
+                                "Database schema error: The users table does not exist. " +
+                                "The database may need to be initialized properly.");
             } else {
-                sendErrorResponse(response, HttpServletResponse.SC_INTERNAL_SERVER_ERROR, 
+                sendErrorResponse(response, HttpServletResponse.SC_INTERNAL_SERVER_ERROR,
                                 "Database error: " + e.getMessage());
             }
         }
